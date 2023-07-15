@@ -27,6 +27,7 @@ async function submitForm(e){
             }else{
                 throw new Error('Failed to login');
             }
+        form.reset();
         
     }
     catch(err){
