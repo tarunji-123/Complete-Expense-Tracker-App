@@ -19,7 +19,7 @@ async function loginSubmitForm(e){
             console.log('hello frm frontend')
             if(response.status == 201){
                 alert(response.data.message);
-                window.location.href = "../main/main.html";
+                window.location.href = "../Expenses/Expenses.html";
             }else{
                 throw new Error('Failed to login');
             }
