@@ -10,8 +10,9 @@
 <body>
     <div class="container">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between">
             <h1>Expense Tracker App</h1>
+            <button class="btn btn-primary" id="rzp-button1">Buy Premium</button>
             </div>
         </div>
         <div class="container my-2 ">
@@ -38,6 +39,7 @@
 
                 <button type="submit" class="btn btn-dark">Submit</button>
             </form>
+            
             <table class="container my-3">
                 <ul class="items my-4" id="items">
                     
@@ -46,6 +48,7 @@
             
         </div>
     </div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script src="Expenses.js"></script>
     
