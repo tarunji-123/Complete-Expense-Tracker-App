@@ -21,9 +21,13 @@ function addExpense(e){
             desc,
             category
         };
-
+        const token = localStorage.getItem('token');
         axios
-        .post('http://localhost:5000/expenses/add-exp',exp)
+        .post('http://localhost:5000/expenses/add-exp',exp,{
+            headers:{
+                'Authorization':token
+            }
+        })
         .then((response)=>{
             console.log(response.data);
             showExpense();
@@ -37,8 +41,10 @@ function addExpense(e){
 
 function showExpense(){
     item.innerHTML = "";
+    const token = localStorage.getItem('token');
+    console.log(token);
     axios
-    .get("http://localhost:5000/expenses/get-exp")
+    .get("http://localhost:5000/expenses/get-exp",{headers: {"Authorization": token}})
     .then((response)=>{
         console.log(response.data.allExpenses);
         response.data.allExpenses.forEach((expData)=> {

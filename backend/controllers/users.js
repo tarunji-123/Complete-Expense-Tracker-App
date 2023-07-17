@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const user = require('../models/user');
+const jwt = require('jsonwebtoken');
 
 function isstringInvalid(string){
     if(string == undefined || string.length ===0){
@@ -30,12 +31,18 @@ exports.signup = async (req,res,next)=>{
     }
 }
 
+
+function generateAccessToken(id, name){
+  return jwt.sign({userId : id , name : name},'mynameistarun')
+}
+
+
 exports.login = async (req, res, next) => {
     try {
       const { email, password } = req.body;
       if (isstringInvalid(email) || isstringInvalid(password)) {
         return res.status(400).json({
-          err: "Bad parameters, Something is missing"
+          err: "Bad parameters, Something is missing",success: false
         });
       }
       console.log(password);
@@ -48,7 +55,7 @@ exports.login = async (req, res, next) => {
         bcrypt.compare(password, foundUser.password, (err, result) => {
           if (result) {
             console.log('hello from login backend');
-            res.status(201).json({ message: 'Successfully Login' });
+            res.status(201).json({ message: 'Successfully Login' , token : generateAccessToken(foundUser.id, foundUser.name)});
           } else {
             res.status(500).json({ message: 'Email or password may be wrong' });
           }
