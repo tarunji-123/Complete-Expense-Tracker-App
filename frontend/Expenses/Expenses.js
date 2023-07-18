@@ -1,5 +1,6 @@
 var form = document.getElementById('my-form');
 var item = document.getElementById('items');
+var item2 = document.getElementById('items2');
 
 var amountInput = document.getElementById('amount');
 var descInput = document.getElementById('desc');
@@ -62,7 +63,6 @@ function showExpense(){
     })
 }
 
-
 function deleteExpense(id){
     console.log('delete fxn run');
     axios
@@ -94,7 +94,9 @@ document.getElementById('rzp-button1').onclick= async function (e){
                 payment_id : response.razorpay_payment_id,
             }, {headers : {"Authorization" : token}})
             alert ('You are a Premium User now')
-            
+            document.getElementById('rzp-button1').remove();
+            document.querySelector('.card-header').innerHTML += '<div><p class="m-0"> You are a premium user</p> <button class="btn btn-outline-info" onclick="showLeaderBoard()">Show leaderboard</button></div>';
+
         }
     }
 
@@ -105,4 +107,15 @@ document.getElementById('rzp-button1').onclick= async function (e){
         console.log(response);
         alert('Something went wrong');
     });
+}
+
+function showLeaderBoard(){
+    item2.innerHTML = ``;
+    axios
+    .get('http://localhost:5000/premium/showLeaderBoard')
+    .then((response)=>{
+        console.log(response);
+        console.log(response.data);
+        console.log("heyyeyeye");
+    })
 }

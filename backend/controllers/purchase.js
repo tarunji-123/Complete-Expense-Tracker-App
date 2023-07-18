@@ -30,27 +30,21 @@ exports.updatetransactionstatus = async(req,res)=>{
     try{
         console.log(req.body);
         const{ payment_id , order_id} = req.body;
-        Order.findOne({where :{orderid : order_id}})
-        .then(order=>{
-            order.update({paymentid:payment_id,status:'SUCCESSFULLY'})
-            .then(()=>{
-                req.user.update({isPremiumUser : true})
-                .then(()=>{
-                    return res.status(202).json({success : true,message :"Transaction Successfull"})
-                })
-                .catch((err)=>{
-                    throw new Error (err);
-                })
-            })
-            .catch((err)=>{
-                throw new Error(err);
-            })
+        const order = await Order.findOne({where :{orderid : order_id}})
+
+        const promise1 = order.update({paymentid:payment_id,status:'SUCCESSFULL'})
+
+        const promise2 = req.user.update({isPremiumUser : true})
+        Promise.all([promise1,promise2]).then(()=>{
+            return res.status(202).json({success : true,message :"Transaction Successfull"})
         })
         .catch((err)=>{
             throw new Error(err);
         })
     }
     catch(err){
-        throw new Error(err);
+        console.log(err);
+        res.status(403).json({error:err, message: 'Something went wrong'});
     }
 }
+
