@@ -85,8 +85,13 @@ function showExpense(){
 
 function deleteExpense(id){
     console.log('delete fxn run');
+    const token = localStorage.getItem('token');
     axios
-    .delete(`http://localhost:5000/expenses/delete-exp/${id}`)
+    .delete(`http://localhost:5000/expenses/delete-exp/${id}`,{
+        headers:{
+            'Authorization':token
+        }
+    })
     .then((response)=>{
         console.log(response.data);
         showExpense();
@@ -150,6 +155,6 @@ async function showLeaderBoard(){
     var leaderBoardItem = document.getElementById('items2');
     leaderBoardItem.innerHTML += `<h1> Leader Board </h1>`
     userLeaderBoardArray.data.forEach((userDetails)=>{
-        leaderBoardItem.innerHTML +=`<li>Name - ${userDetails.name} TotalExpenses - ${userDetails.total_cost || 0 }`
+        leaderBoardItem.innerHTML +=`<li>Name - ${userDetails.name} TotalExpenses - ${userDetails.totalExpense || 0 }`
     })    
 }

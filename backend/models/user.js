@@ -21,7 +21,11 @@ const expenses = sequelize.define('user',{
         type : Sequelize.STRING,
         allowNull : false
     },
-    isPremiumUser : Sequelize.BOOLEAN
+    isPremiumUser : Sequelize.BOOLEAN,
+    totalExpense : {
+        type : Sequelize.DOUBLE,
+        defaultValue : 0,
+    }
 })
 
 module.exports  = expenses;
