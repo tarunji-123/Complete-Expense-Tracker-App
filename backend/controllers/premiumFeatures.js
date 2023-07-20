@@ -3,8 +3,8 @@ const Expense = require('../models/expenses');
 
 exports.getUserLeaderBoard = async(req,res)=>{
     try{
-        const users = await User.find();
-        const expenses = await Expense.find();
+        const users = await User.findAll();
+        const expenses = await Expense.findAll();
         const userAggregateExpenses = {};
         console.log(expenses);
 
