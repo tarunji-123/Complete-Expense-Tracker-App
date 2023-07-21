@@ -46,7 +46,7 @@ function addExpense(e){
 
 function showPremiumMessage(){
     rzpBtn.style.visibility ="hidden";
-    document.querySelector('.card-header').innerHTML += '<div><p class="m-0"> You are a premium user</p> <button class="btn btn-outline-info" onclick="showLeaderBoard()">Show leaderboard</button></div>';
+    document.querySelector('.card-header').innerHTML += '<div><p class="m-0"> You are a premium user</p> <button class="btn btn-outline-info" >Show leaderboard</button></div>';
     // localStorage.setItem('isadmin',true);
 }
 
@@ -74,27 +74,28 @@ function showExpense(){
             ${expData.amount}-
             ${expData.desc}-
             ${expData.category}
-            <input type="button" class="btn btn-danger" value = "Delete" onclick = "deleteExpense('${expData.id}')">
+            <input type="button" class="btn btn-danger" value = "Delete" onclick = "deleteExpense('${expData.id}','${expData.amount}')">
             </li>`;
         })
+        showLeaderBoard();
     })
     .catch((err)=>{
         console.log(err);
     })
 }
 
-function deleteExpense(id){
+function deleteExpense(id,amount){
+    
+    const amount1 = amount;
+    console.log(amount1);
     console.log('delete fxn run');
     const token = localStorage.getItem('token');
     axios
-    .delete(`http://localhost:5000/expenses/delete-exp/${id}`,{
-        headers:{
-            'Authorization':token
-        }
-    })
+    .delete(`http://localhost:5000/expenses/delete-exp/${id}?amount=${amount}`,{headers : {"Authorization": token}})
     .then((response)=>{
         console.log(response.data);
         showExpense();
+        // showLeaderBoard();
         console.log(response.data);
     })
     .catch((err)=>{

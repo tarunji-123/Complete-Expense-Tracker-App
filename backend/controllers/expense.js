@@ -1,27 +1,38 @@
 const expenses = require('../models/expenses');
 const userTable = require('../models/user')
+const sequeilize = require('../util/database');
 
 exports.addExpense = async(req,res,next)=>{
-    const {amount , desc, category} = req.body;
-    const userId = req.user.id;
-    const data = await expenses.create({
-        amount : amount,
-        desc : desc,
-        category : category,
-        userId : userId,
-    })
-    // Fetch the current user from the database
-    const user = await userTable.findByPk(userId);
+    try{
+        const t = await sequeilize.transaction();
+        const {amount , desc, category} = req.body;
+        const userId = req.user.id;
 
-    // Convert totalExpense to a number using parseFloat
-    const currentTotalExpense = parseFloat(user.totalExpense || 0);
+        if(amount == undefined || amount.length ===0){
+            return res.status(400).json({success: false, message: 'Parameter missing'});
+        }
+        const data = await expenses.create({
+            amount : amount,
+            desc : desc,
+            category : category,
+            userId : userId,
+        },
+        {transaction: t})
+        const user = await userTable.findByPk(userId , { transaction: t});
 
-    // Update the totalExpense field with the new amount
-    const newTotalExpense = currentTotalExpense + parseFloat(amount);
-    await user.update({ totalExpense: newTotalExpense });
-    console.log(userTable);
-    console.log ("expense add");
-    res.status(201).json({newExpenseDetail : data});
+        const currentTotalExpense = parseFloat(user.totalExpense || 0);
+
+        const newTotalExpense = currentTotalExpense + parseFloat(amount);
+        await user.update({ totalExpense: newTotalExpense }, {transaction : t});
+        
+        await t.commit();
+        console.log ("expense add");
+        res.status(201).json({newExpenseDetail : data});
+        }catch(err){
+            await t.rollback();
+            console.log(err);
+            res.status(500).json({success: false, message: "Error adding expense"})
+        }
 }
 
 exports.getExpenses = async(req,res,next)=>{
@@ -43,15 +54,35 @@ exports.getExpense = async(req,res,next)=>{
 
 
 exports.deleteExpenses = async(req,res,next)=>{
-    const userId = req.user.id;
-    const expId = req.params.id;
-    const amount = req.params.amount;
-    const user = await userTable.findByPk(userId);
-    const currentTotalExpense = parseFloat(user.totalExpense || 0);
-    const newTotalExpense = currentTotalExpense - parseFloat(amount);
-    await user.update({ totalExpense: newTotalExpense });
-    console.log(userTable);
-    await expenses.destroy({where : {id : expId}});
-    res.sendStatus(200);
+    try{
+        
+        const userId = req.user.id;
+        console.log("userId ;", userId);
+        const expId = req.params.id;
+        console.log("expId ; ",expId)
+        const amount = req.query.amount;
+        console.log ("amount ; ", amount);
+
+        if(!amount || isNaN(amount)){
+            return res.status(400).json({success: false, message: 'Invalid amount'})
+        }
+        const user = await userTable.findByPk(userId);
+
+        if(!user){
+            return res.status(404).json({success: false, message: 'User Not Found'})
+        }
+        const currentTotalExpense = parseFloat(user.totalExpense ||0);
+
+        const newTotalExpense = currentTotalExpense - parseFloat(amount);
+
+        await user.update({ totalExpense: newTotalExpense });
+        console.log(userTable);
+        await expenses.destroy({where : {id : expId}});
+        res.json({success:true, message:'Successfully expense deleted'});
+    
+    }catch(err){
+        console.log(err);
+        res.status(500).json({success:false, message: 'Error delete Expense'})
+    }
 }
 

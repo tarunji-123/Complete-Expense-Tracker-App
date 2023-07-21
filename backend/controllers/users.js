@@ -32,9 +32,6 @@ exports.signup = async (req,res,next)=>{
 } 
 
 
-// function generateAccessToken(id, name, isPremiumUser){
-//   return jwt.sign({userId : id , name : name, isPremiumUser},'mynameistarun')
-// }
 function generateAccessToken  (id, name, isPremiumUser){
   return jwt.sign({userId: id, name: name, isPremiumUser}, 'mynameistarun');
 }

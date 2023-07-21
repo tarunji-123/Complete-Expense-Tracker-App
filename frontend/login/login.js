@@ -1,9 +1,10 @@
-
 var form = document.getElementById('my-form');
+// var forgotpassForm = document.getElementById('my-forgotpss-form');
 
 form.addEventListener('submit',(e)=>{
     loginSubmitForm(e);
 });
+
 async function loginSubmitForm(e){
     try{
         e.preventDefault();
@@ -32,3 +33,4 @@ async function loginSubmitForm(e){
         document.body.innerHTML += `<div style="color:red"> ${err.message}<div>`;
     }
 }
+
