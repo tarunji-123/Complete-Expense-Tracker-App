@@ -1,32 +1,34 @@
 const SibApiV3Sdk = require('sib-api-v3-sdk');
-const { TransactionalEmailsApi, SendSmtpEmail } = SibApiV3Sdk;
 
-require('dotenv').config();
+const dotenv = require('dotenv').config();
 
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
 // Set your SendinBlue API key
-const apiKey = process.env.API_KEY;
+var apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.API_KEY;
 
-// Initialize the TransactionalEmailsApi with your API key
-const apiInstance = new TransactionalEmailsApi();
-apiInstance.setApiKey(apiKey);
+exports.sendEmailss = async(req,res)=>{
+  const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+  const sender ={
+    email : "tarunbhadoriya141@gmail.com",
+    name : "Tarun Bhadoriya",
+  };
+  const receivers = [
+    {
+      email : req.body.email,
+    }
+  ];
 
-// Sender and recipient information
-const sender = { email: 'tarunbhadoriya141@gmail.com' };
-const receivers = [{ email: 'tarunbhadoriya151@gmail.com' }];
-
-// Create the email object
-const email = new SendSmtpEmail({
-  sender,
-  to: receivers,
-  subject: 'Hello Hello',
-  textContent: 'how are you?',
-});
-
-// Send the email 
-apiInstance.sendTransacEmail(email)
-  .then((response) => {
-    console.log('Email sent successfully!', response);
-  })
-  .catch((error) => {
-    console.error('Error sending email:', error);
-  });
+  try{
+    const sendEmail = await apiInstance.sendTransacEmail({
+      sender,
+      to : receivers,
+      subject : "hello boy",
+      textContent : "text Email",
+      
+    });
+    return res.send(sendEmail);
+  }catch(err){
+    console.log(err);
+  }
+}

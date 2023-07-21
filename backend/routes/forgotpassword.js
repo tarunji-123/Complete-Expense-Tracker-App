@@ -5,6 +5,6 @@ const forgotpasswordController = require('../controllers/forgotpassword');
 const router = express.Router();
 
 router.post('/forgotpassword',
-forgotpasswordController.forgotpassword)
+forgotpasswordController.sendEmailss);
 
 module.exports = router;
