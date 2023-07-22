@@ -46,7 +46,7 @@ function addExpense(e){
 
 function showPremiumMessage(){
     rzpBtn.style.visibility ="hidden";
-    document.querySelector('.card-header').innerHTML += '<div><p class="m-0"> You are a premium user</p> <button class="btn btn-outline-info" >Show leaderboard</button></div>';
+    document.querySelector('.card-header').innerHTML += '<div><p class="m-0"> You are a premium user</p> <button class="btn btn-outline-info" onclick="showLeaderBoard()">Show leaderboard</button></div>';
     // localStorage.setItem('isadmin',true);
 }
 
@@ -77,7 +77,12 @@ function showExpense(){
             <input type="button" class="btn btn-danger" value = "Delete" onclick = "deleteExpense('${expData.id}','${expData.amount}')">
             </li>`;
         })
-        showLeaderBoard();
+        if(checkPremiumUser){
+            console.log("ok good");
+            showLeaderBoard();
+        }else{
+            console.log("not a prime user", checkPremiumUser);
+        }
     })
     .catch((err)=>{
         console.log(err);
@@ -159,3 +164,63 @@ async function showLeaderBoard(){
         leaderBoardItem.innerHTML +=`<li>Name - ${userDetails.name} TotalExpenses - ${userDetails.totalExpense || 0 }`
     })    
 }
+
+async function download() {
+    let token = localStorage.getItem("token");
+    console.log(token);
+    try {
+      const response = await axios.get("http://localhost:5000/expenses/download", {
+        headers: { "Authorization": token },
+      });
+      var a = document.createElement("a");
+      a.href = response.data.fileUrl;
+      a.download = "myexpense.csv";
+      a.click();
+    } catch (err) {
+      console.log(err);
+    }
+}
+  
+
+function showDownloadLinks() {
+    const inputElement = document.createElement("input");
+    inputElement.type = "button";
+    inputElement.value = "Show Download File Link";
+    inputElement.id = "downloadfile-btn";
+    inputElement.style.backgroundColor = "gold";
+    inputElement.style.color = "black";
+    inputElement.style.borderRadius = "15px";
+    inputElement.style.padding = "8px";
+    inputElement.style.marginLeft = "100px";
+    const header = document.getElementById("main-header");
+    header.appendChild(inputElement);
+  
+    inputElement.onclick = async () => {
+      const heading = document.getElementById("heading");
+      heading.innerText = "Show Download Url";
+      const downloadUrl = document.getElementById("downloadlinks");
+      const token = localStorage.getItem("token");
+  
+      const downloadLinks = await axios.get(
+        "http://localhost:5000/expenses/show-downloadLink",
+        { headers: { Authorization: token } }
+      );
+      console.log("downloadLinks", downloadLinks);
+      if (downloadLinks.data.url == [] || downloadLinks.data.url == "") {
+        const li = document.createElement("li");
+        li.innerText = "No Downloaded Url";
+        downloadUrl.append(li);
+      } else {
+        downloadLinks.data.url.forEach((Element) => {
+          console.log("Element.filelink", Element);
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = `${Element.filelink}`;
+          a.innerHTML = ` Url:  ${Element.filelink} `;
+          li.appendChild(a);
+          downloadUrl.appendChild(li);
+        });
+      }
+    };
+  }
+  

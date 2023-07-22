@@ -1,6 +1,9 @@
 const expenses = require('../models/expenses');
+// const expenses = require('../models/user');
 const userTable = require('../models/user')
 const sequeilize = require('../util/database');
+// const S3Services = require('../services/S3Services');
+const FilesDownload = require("../models/filesdownloaded");
 
 exports.addExpense = async(req,res,next)=>{
     try{
@@ -86,3 +89,34 @@ exports.deleteExpenses = async(req,res,next)=>{
     }
 }
 
+
+exports.download = async (req, res) => {
+    try {
+      const expenses = await expenses.findAll({ where: { userId: req.user.id } });
+      // console.log(expenses);
+      const strinfiyExpenses = JSON.stringify(expenses);
+      const userId = req.user.id;
+      const filename = `expenses${userId}/${new Date()}.txt`;
+      const fileUrl = await S3Services.uploadToS3(strinfiyExpenses, filename);
+      // await FilesDownload.create({
+      //   filelink: fileUrl,
+      //   userId,
+      // });
+      res.status(200).json({ fileUrl });
+    } catch (err) {
+      res.status(500).json({ fileUrl: "" });
+    }
+  };
+  
+
+exports.downloadLinks=async (req,res)=>{
+    const t = await sequeilize.transaction();
+  try{
+    const url=await FilesDownload.findAll({where:{userId:req.user.id}})
+    res.status(200).json({sucess:'true',url})
+  }
+  catch(err){
+    console.log(err);
+    res.status(500).json({success:'false',error:err});
+  }
+  }
