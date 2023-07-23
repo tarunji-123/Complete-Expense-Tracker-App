@@ -127,7 +127,6 @@ document.getElementById('rzp-button1').onclick= async function (e){
     console.log("key",response.data.key_id);
     console.log("order_id",response.data.order.id);
     var options = {
-        // "key":'rzp_test_kL1qrGVRGjqWvz',
         "key" : response.data.key_id,
         "order_id": response.data.order.id,
         "handler": async function(response){
@@ -176,6 +175,7 @@ async function download() {
       a.href = response.data.fileUrl;
       a.download = "myexpense.csv";
       a.click();
+      showDownloadLinks();
     } catch (err) {
       console.log(err);
     }

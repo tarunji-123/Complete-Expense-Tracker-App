@@ -7,33 +7,21 @@ const User = require('../models/user');
 
 const dotenv = require('dotenv').config();
 
-// const defaultClient = SibApiV3Sdk.ApiClient.instance;
-// // Set your SendinBlue API key
-// var apiKey = defaultClient.authentications['api-key'];
-// apiKey.apiKey = process.env.API_KEY;
-
 const forgotpassword = async(req,res)=>{
   const defaultClient = SibApiV3Sdk.ApiClient.instance;
-  // Set your SendinBlue API key
+  
   var apiKey = defaultClient.authentications['api-key'];
   apiKey.apiKey = process.env.API_KEY;
   try{
     const email = req.body.email;
-    console.log(email);
     const user = await User.findOne({where : {email}});
     if(user){
       const id = uuid.v4();
-      console.log("id: ",id);
-      // await user.createForgotPassword({id, active : true})
       const forgotpasswordcreate = await forgotPassword
       .create({ id, active: true, userId: user.id })
       console.log(forgotpasswordcreate)
-        // .catch(err=>{
-        //   throw new Error(err, "this error");
-        // });
 
       const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-      console.log("apiInstance: ",apiInstance);
       const sender ={
         email : "tarunbhadoriya141@gmail.com",
         name : "Tarun Bhadoriya",
@@ -43,7 +31,6 @@ const forgotpassword = async(req,res)=>{
           email : req.body.email,
         }
       ];
-      console.log(receivers,"receivers");
 
       const msg = {
         sender,
@@ -51,11 +38,9 @@ const forgotpassword = async(req,res)=>{
         subject : "Reset Your Password",
         htmlContent: `<a href="http://localhost:5000/password/resetpassword/${id}">Reset password </a>`,
       };
-      console.log(msg,"msg");
 
       try{
         const sendEmail = await apiInstance.sendTransacEmail(msg);
-        console.log(sendEmail,"sendEmail:");
         return res.status(200).json({message: 'Link to reset password sent to your mail', success: true});
       }catch(error){
         console.error('Error sending the email:', error);

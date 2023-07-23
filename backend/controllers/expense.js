@@ -1,9 +1,8 @@
 const expenses = require('../models/expenses');
-// const expenses = require('../models/user');
 const userTable = require('../models/user')
 const sequeilize = require('../util/database');
-// const S3Services = require('../services/S3Services');
 const FilesDownload = require("../models/filesdownloaded");
+const S3Services = require('../services/S3services');
 
 exports.addExpense = async(req,res,next)=>{
     try{
@@ -60,11 +59,8 @@ exports.deleteExpenses = async(req,res,next)=>{
     try{
         
         const userId = req.user.id;
-        console.log("userId ;", userId);
         const expId = req.params.id;
-        console.log("expId ; ",expId)
         const amount = req.query.amount;
-        console.log ("amount ; ", amount);
 
         if(!amount || isNaN(amount)){
             return res.status(400).json({success: false, message: 'Invalid amount'})
@@ -91,17 +87,13 @@ exports.deleteExpenses = async(req,res,next)=>{
 
 
 exports.download = async (req, res) => {
+    
     try {
-      const expenses = await expenses.findAll({ where: { userId: req.user.id } });
-      // console.log(expenses);
-      const strinfiyExpenses = JSON.stringify(expenses);
+      const Expense = await expenses.findAll({ where: { userId: req.user.id } });
+      const strinfiyExpenses = JSON.stringify(Expense);
       const userId = req.user.id;
       const filename = `expenses${userId}/${new Date()}.txt`;
       const fileUrl = await S3Services.uploadToS3(strinfiyExpenses, filename);
-      // await FilesDownload.create({
-      //   filelink: fileUrl,
-      //   userId,
-      // });
       res.status(200).json({ fileUrl });
     } catch (err) {
       res.status(500).json({ fileUrl: "" });
@@ -120,3 +112,4 @@ exports.downloadLinks=async (req,res)=>{
     res.status(500).json({success:'false',error:err});
   }
   }
+
