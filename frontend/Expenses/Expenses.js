@@ -7,10 +7,12 @@ var amountInput = document.getElementById('amount');
 var descInput = document.getElementById('desc');
 var categoryInput = document.getElementById('category');
 
+const expensesPreferenceDropdown = document.getElementById('expensesPreference');
+
 var premiumMessageShown = false;
 
 form.addEventListener("submit",addExpense);
-window.addEventListener('load',showExpense);
+window.addEventListener('load',showExpense(1));
 window.addEventListener('load', checkPremiumUser);
 
 function addExpense(e){
@@ -60,34 +62,87 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
-function showExpense(){
+function saveExpensePreference(expensePreference) {
+    localStorage.setItem('expensesPreference', expensePreference);
+    showExpense()
+}
+
+expensesPreferenceDropdown.addEventListener('change', function () {
+    const selectedValue = expensesPreferenceDropdown.value;
+    saveExpensePreference(selectedValue);
+});
+
+function showExpense(page ){
+
     item.innerHTML = "";
     const token = localStorage.getItem('token');
     console.log(token);
-    axios
-    .get("http://localhost:5000/expenses/get-exp",{headers: {"Authorization": token}})
+    
+    const expensePreference = localStorage.getItem('expensesPreference');
+
+    const pagesize = expensePreference ? parseInt(expensePreference) : 5;
+
+    if (!page || page < 1) {
+        page = 1;
+    }
+    
+    axios.get(`http://localhost:5000/expenses/get-exp?page=${page}&pagesize=${pagesize}`,{headers: {"Authorization": token},
+    })
     .then((response)=>{
-        console.log(response.data.allExpenses);
-        response.data.allExpenses.forEach((expData)=> {
-            item.innerHTML += `
-            <li class= "fw-bold fs-5 my-1"> 
-            ${expData.amount}-
-            ${expData.desc}-
-            ${expData.category}
-            <input type="button" class="btn btn-danger" value = "Delete" onclick = "deleteExpense('${expData.id}','${expData.amount}')">
-            </li>`;
-        })
-        if(checkPremiumUser){
-            console.log("ok good");
-            showLeaderBoard();
-        }else{
-            console.log("not a prime user", checkPremiumUser);
-        }
+
+     console.log("response",response);
+    console.log(response.data.allExpenses);
+    const{currentPage, hasNextPage, nextPage, hasPreviousPage, previousPage, lastPage} = response.data;
+    console.log(response.data.currentPage);
+    response.data.allExpenses.forEach((expData)=>{
+        item.innerHTML += `
+        <li class= "fw-bold fs-5 my-1"> 
+        ${expData.amount}-
+        ${expData.desc}-
+        ${expData.category}
+        <input type="button" class="btn btn-danger"value = "Delete" onclick = "deleteExpense('{expData.id}','${expData.amount}')">
+        </li>`;
     })
-    .catch((err)=>{
-        console.log(err);
+    
+    showPagination({currentPage, hasNextPage, nextPage, hasPreviousPage, previousPage, lastPage})
+
+       
     })
+    .catch((err)=>console.log(err));
+    // if(checkPremiumUser){
+    //     console.log("ok good");
+    //     showLeaderBoard();
+    // }else{
+    //     console.log("not a prime user",checkPremiumUser);
+    // }
+    
 }
+
+function showPagination({
+    currentPage,
+    hasNextPage,
+    nextPage,
+    hasPreviousPage,
+    previousPage,
+}) {
+    
+    const button = document.getElementById('pagination');
+    let buttonsHTML = []; // Create an array to store the pagination buttons
+
+    if (hasPreviousPage) {
+        console.log("hasPreviousPage")
+        buttonsHTML.push(`<button class="btn btn-primary" onclick="showExpense(${previousPage})">Previous Page</button>`);
+    }
+
+    if (hasNextPage) {
+        console.log("hasNextPage")
+        buttonsHTML.push(`<button class="btn btn-primary" onclick="showExpense(${nextPage})">Next Page</button>`);
+    }
+
+    // Update the button's innerHTML with the complete pagination HTML
+    button.innerHTML = buttonsHTML.join(' ');
+}
+
 
 function deleteExpense(id,amount){
     
