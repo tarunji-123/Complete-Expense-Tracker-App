@@ -12,7 +12,7 @@ const expensesPreferenceDropdown = document.getElementById('expensesPreference')
 var premiumMessageShown = false;
 
 form.addEventListener("submit",addExpense);
-window.addEventListener('load',showExpense(1));
+window.addEventListener('load',showExpense);
 window.addEventListener('load', checkPremiumUser);
 
 function addExpense(e){
@@ -72,7 +72,7 @@ expensesPreferenceDropdown.addEventListener('change', function () {
     saveExpensePreference(selectedValue);
 });
 
-function showExpense(page ){
+function showExpense(page){
 
     item.innerHTML = "";
     const token = localStorage.getItem('token');
@@ -81,7 +81,6 @@ function showExpense(page ){
     const expensePreference = localStorage.getItem('expensesPreference');
 
     const pagesize = expensePreference ? parseInt(expensePreference) : 5;
-
     if (!page || page < 1) {
         page = 1;
     }
@@ -90,31 +89,27 @@ function showExpense(page ){
     })
     .then((response)=>{
 
-     console.log("response",response);
     console.log(response.data.allExpenses);
     const{currentPage, hasNextPage, nextPage, hasPreviousPage, previousPage, lastPage} = response.data;
-    console.log(response.data.currentPage);
     response.data.allExpenses.forEach((expData)=>{
         item.innerHTML += `
         <li class= "fw-bold fs-5 my-1"> 
         ${expData.amount}-
         ${expData.desc}-
         ${expData.category}
-        <input type="button" class="btn btn-danger"value = "Delete" onclick = "deleteExpense('{expData.id}','${expData.amount}')">
+        <input type="button" class="btn btn-danger"value = "Delete" onclick = "deleteExpense('${expData.id}','${expData.amount}')">
         </li>`;
     })
     
     showPagination({currentPage, hasNextPage, nextPage, hasPreviousPage, previousPage, lastPage})
 
-       
+    if(premiumMessageShown == true){
+        showLeaderBoard();
+    }
+    
     })
     .catch((err)=>console.log(err));
-    // if(checkPremiumUser){
-    //     console.log("ok good");
-    //     showLeaderBoard();
-    // }else{
-    //     console.log("not a prime user",checkPremiumUser);
-    // }
+    
     
 }
 
@@ -139,7 +134,6 @@ function showPagination({
         buttonsHTML.push(`<button class="btn btn-primary" onclick="showExpense(${nextPage})">Next Page</button>`);
     }
 
-    // Update the button's innerHTML with the complete pagination HTML
     button.innerHTML = buttonsHTML.join(' ');
 }
 
@@ -167,12 +161,16 @@ function checkPremiumUser() {
     const token = localStorage.getItem('token');
     const decodeToken = parseJwt(token);
     const isPremiumUser = decodeToken.isPremiumUser;
-  
+    console.log("ispremiumUser ==>",isPremiumUser);
+    console.log(premiumMessageShown,"-->premiumMessageSHown")
+
     if (isPremiumUser && !premiumMessageShown) {
+        console.log("inside if condition");
       showPremiumMessage();
       premiumMessageShown = true; // Set the flag to true
     }
-  }
+    // showLeaderBoard();
+}
 
 document.getElementById('rzp-button1').onclick= async function (e){
     const token = localStorage.getItem('token');
@@ -212,9 +210,12 @@ async function showLeaderBoard(){
     const userLeaderBoardArray =  await axios.get('http://localhost:5000/premium/showLeaderBoard',{headers : {"Authorization": token}});
     console.log(userLeaderBoardArray);
 
+
     var leaderBoardItem = document.getElementById('items2');
+    leaderBoardItem.innerHTML = '';
     leaderBoardItem.innerHTML += `<h1> Leader Board </h1>`
     userLeaderBoardArray.data.forEach((userDetails)=>{
+        console.log(userDetails.name, "userDetails name")
         leaderBoardItem.innerHTML +=`<li>Name - ${userDetails.name} TotalExpenses - ${userDetails.totalExpense || 0 }`
     })    
 }
@@ -230,52 +231,10 @@ async function download() {
       a.href = response.data.fileUrl;
       a.download = "myexpense.csv";
       a.click();
-      showDownloadLinks();
     } catch (err) {
-      console.log(err);
+        throw new Error(err);
     }
 }
   
 
-function showDownloadLinks() {
-    const inputElement = document.createElement("input");
-    inputElement.type = "button";
-    inputElement.value = "Show Download File Link";
-    inputElement.id = "downloadfile-btn";
-    inputElement.style.backgroundColor = "gold";
-    inputElement.style.color = "black";
-    inputElement.style.borderRadius = "15px";
-    inputElement.style.padding = "8px";
-    inputElement.style.marginLeft = "100px";
-    const header = document.getElementById("main-header");
-    header.appendChild(inputElement);
-  
-    inputElement.onclick = async () => {
-      const heading = document.getElementById("heading");
-      heading.innerText = "Show Download Url";
-      const downloadUrl = document.getElementById("downloadlinks");
-      const token = localStorage.getItem("token");
-  
-      const downloadLinks = await axios.get(
-        "http://localhost:5000/expenses/show-downloadLink",
-        { headers: { Authorization: token } }
-      );
-      console.log("downloadLinks", downloadLinks);
-      if (downloadLinks.data.url == [] || downloadLinks.data.url == "") {
-        const li = document.createElement("li");
-        li.innerText = "No Downloaded Url";
-        downloadUrl.append(li);
-      } else {
-        downloadLinks.data.url.forEach((Element) => {
-          console.log("Element.filelink", Element);
-          const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = `${Element.filelink}`;
-          a.innerHTML = ` Url:  ${Element.filelink} `;
-          li.appendChild(a);
-          downloadUrl.appendChild(li);
-        });
-      }
-    };
-  }
   

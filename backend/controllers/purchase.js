@@ -14,8 +14,8 @@ exports.purchasepremium = async(req,res)=>{
         if(err){
             throw new Error (JSON.stringify(err));
         }
-        console.log('req',req);
-        console.log('req.user', req.user);
+        // console.log('req',req);
+        // console.log('req.user', req.user);
         req.user.createOrder({orderid : order.id, status : 'PENDING'})
         .then(()=>{
             return res.status(201).json({order,key_id : rzp.key_id});
@@ -30,7 +30,7 @@ exports.purchasepremium = async(req,res)=>{
 
 exports.updatetransactionstatus = async(req,res)=>{
     try{
-        console.log(req.body);
+        console.log("req.body",req.body);
         const userId = req.user.id;
         const{ payment_id , order_id} = req.body;
         const order = await Order.findOne({where :{orderid : order_id}})

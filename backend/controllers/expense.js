@@ -39,11 +39,9 @@ exports.addExpense = async(req,res,next)=>{
 
 exports.getExpenses = async(req,res,next)=>{
     try{
-        console.log(req.query.page);
         let page =+ req.query.page ||1;
-        console.log("page",page);
         const pageSize  =+req.query.pagesize || 3;
-        const totalexpense = await expenses.count();
+        const totalexpense = await expenses.count({where : {userId : req.user.id}});
         
         console.log(totalexpense);
         console.log('userId ',req.user.id);
@@ -51,18 +49,16 @@ exports.getExpenses = async(req,res,next)=>{
         offset : (page - 1) * pageSize,
         limit: pageSize
         });
-        console.log("expense ->", expense);
-        console.log("expenses:=",expense);
+        
         res.status(200).json({
             allExpenses: expense,
             currentPage : page,
-            hasNextPage : page *pageSize <= totalexpense,
+            hasNextPage : page *pageSize < totalexpense,
             nextPage : page +1,
             hasPreviousPage : page >1,
             previousPage : page -1,
             lastPage : Math.ceil(totalexpense/pageSize)
         });
-        // console.log(allExpenses,"allExpenses");
     }
     catch(err){
         return res.status(401).json({success: false});
@@ -96,7 +92,6 @@ exports.deleteExpenses = async(req,res,next)=>{
         const newTotalExpense = currentTotalExpense - parseFloat(amount);
 
         await user.update({ totalExpense: newTotalExpense });
-        console.log(userTable);
         await expenses.destroy({where : {id : expId}});
         res.json({success:true, message:'Successfully expense deleted'});
     
@@ -121,16 +116,3 @@ exports.download = async (req, res) => {
     }
   };
   
-
-exports.downloadLinks=async (req,res)=>{
-    const t = await sequeilize.transaction();
-  try{
-    const url=await FilesDownload.findAll({where:{userId:req.user.id}})
-    res.status(200).json({sucess:'true',url})
-  }
-  catch(err){
-    console.log(err);
-    res.status(500).json({success:'false',error:err});
-  }
-  }
-
